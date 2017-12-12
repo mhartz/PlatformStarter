@@ -5,21 +5,27 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
     public float MoveSpeed;
     public float JumpSpeed;
-    public Transform groundCheck;
-    public float groundCheckRadius;
-    public LayerMask groundLayer;
+    public bool AllowDoubleJump;
 
     private Rigidbody2D rb;
-    private bool isGrounded;
+    private bool IsGrounded;
+    private int JumpCount = 0;
 
 	void Start () {
         rb = GetComponent<Rigidbody2D>();
-
 	}
 	
 	void Update () {
 		MovePlayer();
-        PlayerJump();
+
+	    if (AllowDoubleJump)
+	    {
+	        PlayerDoubleJump();
+	    }
+	    else
+	    {
+	        PlayerJump();
+        }
 	}
 
     private void MovePlayer()
@@ -42,15 +48,50 @@ public class PlayerController : MonoBehaviour {
 
     private void PlayerJump()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        Debug.Log("isGrounded: " + isGrounded);
-        Debug.Log("groundCheck.position: " + groundCheck.position);
-        Debug.Log("groundCheckRadius: " + groundCheckRadius);
-        Debug.Log("groundLayer: " + groundLayer);
-
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump") && IsGrounded)
         {
             rb.velocity = new Vector3(rb.velocity.x, JumpSpeed, 0f);
+        }
+    }
+
+    private void PlayerDoubleJump()
+    {
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (JumpCount < 2)
+            {
+                rb.velocity = new Vector3(rb.velocity.x, JumpSpeed, 0f);
+                JumpCount++;
+            }                
+        }
+    }
+
+    private void Instakill()
+    {
+        //Todo : Need to implement a respawn based on the Game Manager
+
+        transform.position = new Vector3(0, 0, 0);
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            IsGrounded = true;
+
+            if (AllowDoubleJump)
+                JumpCount = 0;
+        }
+
+        if (collision.gameObject.tag == "Instakill")
+            Instakill();
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Ground")
+        {
+            IsGrounded = false;
         }
     }
 }

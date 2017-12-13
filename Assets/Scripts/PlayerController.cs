@@ -46,7 +46,7 @@ namespace Assets.Scripts
 
             _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, MaxMoveSpeed);
             _rb.AddForce(_playerControls.normalized * MoveForce);
-            Debug.Log(_playerControls.normalized * MoveForce);
+            Debug.Log(_rb.inertia);
         }
 
         private void PlayerJump()
@@ -76,7 +76,7 @@ namespace Assets.Scripts
             transform.position = new Vector3(0, 0, 0);
         }
 
-        void OnCollisionEnter2D(Collision2D collision)
+        void OnCollisionStay2D(Collision2D collision)
         {
             if (collision.gameObject.tag == "Ground")
             {

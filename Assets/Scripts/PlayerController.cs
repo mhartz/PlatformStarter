@@ -5,6 +5,7 @@ namespace Assets.Scripts
     public class PlayerController : MonoBehaviour {
         public float MaxMoveSpeed;
         public float MoveForce;
+        public float DampingSpeed;
         public float JumpSpeed;
         public bool AllowDoubleJump;
         public bool AllowRun;
@@ -38,6 +39,8 @@ namespace Assets.Scripts
 
         private void MovePlayer()
         {
+            var noMovement = new Vector2(0f, 0f);
+
             //Running when shift it held
             if (AllowRun && Input.GetButton("Run"))
                 MaxMoveSpeed = _runSpeed;
@@ -46,7 +49,18 @@ namespace Assets.Scripts
 
             _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, MaxMoveSpeed);
             _rb.AddForce(_playerControls.normalized * MoveForce);
-            Debug.Log(_rb.inertia);
+
+            // Slow down player when not pushing a button
+            if (_rb.velocity != noMovement) {
+                if (Input.GetAxis("Horizontal") < 1f)
+                {
+                    _rb.AddForce(new Vector2(-DampingSpeed, 0f));
+                }
+                else if (Input.GetAxis("Horizontal") > -1f)
+                {
+                    _rb.AddForce(new Vector2(DampingSpeed, 0f));
+                }
+            }
         }
 
         private void PlayerJump()

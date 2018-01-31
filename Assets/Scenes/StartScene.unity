@@ -621,6 +621,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxMoveSpeed: 7
   MoveForce: 5
+  DampingSpeed: 5
   JumpSpeed: 10
   AllowDoubleJump: 0
   AllowRun: 1

@@ -5,7 +5,7 @@ namespace Assets.Scripts
     public class PlayerController : MonoBehaviour {
         public float MaxMoveSpeed;
         public float MoveForce;
-        public float DampingSpeed;
+        public float DragSpeed;
         public float JumpSpeed;
         public bool AllowDoubleJump;
         public bool AllowRun;
@@ -17,14 +17,22 @@ namespace Assets.Scripts
         private float _resetMoveSpeed;
         private float _runSpeed;
 
+        private float _moveInput;
+        private bool _runInput;
+        private bool _jumpInput;
+
         void Start () {
             _rb = GetComponent<Rigidbody2D>();
             _resetMoveSpeed = MaxMoveSpeed;
             _runSpeed = MaxMoveSpeed * 2f;
+
+            _moveInput = Input.GetAxis("Horizontal");
+            _runInput = Input.GetButton("Run");
+            _jumpInput = Input.GetButtonDown("Jump");
         }
 	
         void Update () {
-            _playerControls = new Vector3(Input.GetAxis("Horizontal"), 0.0f, 0.0f);
+            _playerControls = new Vector3(_moveInput, 0.0f, 0.0f);
 
             if (AllowDoubleJump)
                 PlayerDoubleJump();
@@ -39,10 +47,8 @@ namespace Assets.Scripts
 
         private void MovePlayer()
         {
-            var noMovement = new Vector2(0f, 0f);
-
             //Running when shift it held
-            if (AllowRun && Input.GetButton("Run"))
+            if (AllowRun && _runInput)
                 MaxMoveSpeed = _runSpeed;
             else
                 MaxMoveSpeed = _resetMoveSpeed;
@@ -51,21 +57,17 @@ namespace Assets.Scripts
             _rb.AddForce(_playerControls.normalized * MoveForce);
 
             // Slow down player when not pushing a button
-            if (_rb.velocity != noMovement) {
-                if (Input.GetAxis("Horizontal") < 1f)
-                {
-                    _rb.AddForce(new Vector2(-DampingSpeed, 0f));
-                }
-                else if (Input.GetAxis("Horizontal") > -1f)
-                {
-                    _rb.AddForce(new Vector2(DampingSpeed, 0f));
-                }
+            if ((_moveInput < 1f || _moveInput > 1f) && _isGrounded) {
+                _rb.drag = DragSpeed;
+            }
+            else {
+                _rb.drag = 0f;
             }
         }
 
         private void PlayerJump()
         {
-            if (Input.GetButtonDown("Jump") && _isGrounded)
+            if (_jumpInput && _isGrounded)
             {
                 _rb.velocity = new Vector3(_rb.velocity.x, JumpSpeed, 0f);
             }
@@ -73,7 +75,7 @@ namespace Assets.Scripts
 
         private void PlayerDoubleJump()
         {
-            if (Input.GetButtonDown("Jump"))
+            if (_jumpInput)
             {
                 if (_jumpCount < 2)
                 {

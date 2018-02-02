@@ -25,13 +25,13 @@ namespace Assets.Scripts
             _rb = GetComponent<Rigidbody2D>();
             _resetMoveSpeed = MaxMoveSpeed;
             _runSpeed = MaxMoveSpeed * 2f;
-
-            _moveInput = Input.GetAxis("Horizontal");
-            _runInput = Input.GetButton("Run");
-            _jumpInput = Input.GetButtonDown("Jump");
         }
 	
         void Update () {
+            _moveInput = Input.GetAxis("Horizontal");
+            _runInput = Input.GetButton("Run");
+            _jumpInput = Input.GetButtonDown("Jump");
+
             _playerControls = new Vector3(_moveInput, 0.0f, 0.0f);
 
             if (AllowDoubleJump)
@@ -56,8 +56,10 @@ namespace Assets.Scripts
             _rb.velocity = Vector3.ClampMagnitude(_rb.velocity, MaxMoveSpeed);
             _rb.AddForce(_playerControls.normalized * MoveForce);
 
+            Debug.Log(_rb.drag);
+
             // Slow down player when not pushing a button
-            if ((_moveInput < 1f || _moveInput > 1f) && _isGrounded) {
+            if ((_moveInput < 1f && _moveInput > -1f) && _isGrounded) {
                 _rb.drag = DragSpeed;
             }
             else {
